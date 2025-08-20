@@ -4,17 +4,21 @@ import traceback
 from utils.helpers import pilih_kategori
 from utils.validation import validasi_data
 from utils.google_utils import get_client, replace_bulan_segmen
-from config import SPREADSHEET_ID, WORKSHEET_NAME
 
 st.set_page_config(page_title="Upload Data", layout="wide")
 st.title("📤 Upload Data ke Google Sheets")
+
+# Pastikan link ada di session_state
+if "spreadsheet_database_url" not in st.session_state or not st.session_state["spreadsheet_database_url"]:
+    st.error("❌ Belum ada link database! Silakan masukkan di halaman Home dulu.")
+    st.stop()
 
 link_spreadsheet = st.text_input("Masukkan link Spreadsheet sumber:")
 nama_worksheet_asal = st.text_input("Masukkan nama Worksheet sumber:")
 
 client = get_client()
-workbook_tujuan = client.open_by_key(SPREADSHEET_ID)
-worksheet_tujuan = workbook_tujuan.worksheet(WORKSHEET_NAME)
+workbook_tujuan = client.open_by_url(st.session_state["spreadsheet_database_url"])
+worksheet_tujuan = workbook_tujuan.worksheet(st.session_state["worksheet_database_name"])
 workbook_asal = client.open_by_url(link_spreadsheet) if link_spreadsheet else None
 
 bulan_target, tahun_target, segmen_target = pilih_kategori()

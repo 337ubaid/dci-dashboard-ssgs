@@ -9,6 +9,11 @@ st.set_page_config(page_title="Tanggungan per AM", layout="wide")
 
 st.title("👤 Tanggungan per AM")
 
+# Pastikan link ada di session_state
+if "spreadsheet_database_url" not in st.session_state or not st.session_state["spreadsheet_database_url"]:
+    st.error("❌ Belum ada link database! Silakan masukkan di halaman Home dulu.")
+    st.stop()
+
 nama = st.text_input("Masukkan Nama AM")
 bulan_target, tahun_target, segmen_target = pilih_kategori()
 tanggal_target = f"{bulan_target}/{tahun_target}"
