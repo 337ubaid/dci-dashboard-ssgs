@@ -10,17 +10,7 @@ st.set_page_config(
 
 # Judul & Isi Homepage
 st.title("📈 Dashboard Data Collection")
-st.write("""
-Selamat datang!  
-Gunakan menu di sidebar untuk:
-1. **Visualisasi Kuadran**   
-2. **Tanggungan tiap AM** 
-3. **Leaderboard AM** 🚀 Coming Soon
-4. **Collection Performance** 🚀 Coming Soon
-5. **Saldo Akhir tiap Bulan** 🚀 Coming Soon
-6. **Upload & Update Database**
-7. **Edit Batas Kuadran**
-""")
+st.write("Selamat datang!")
 
 # Input link database dari user
 link = st.text_input("Masukkan link Spreadsheet Database:", 
@@ -41,3 +31,15 @@ if "spreadsheet_database_url" in st.session_state and st.session_state["spreadsh
     menu()
 else:
     st.warning("Silakan masukkan link database dan simpan terlebih dahulu untuk mengakses Dashboard")
+
+st.write(""" 
+         
+Gunakan menu di sidebar untuk:
+1. **Visualisasi Kuadran**   
+2. **Tanggungan tiap AM** 
+3. **Leaderboard AM** 🚀 Coming Soon
+4. **Collection Performance** 🚀 Coming Soon
+5. **Saldo Akhir tiap Bulan** 🚀 Coming Soon
+6. **Upload & Update Database**
+7. **Edit Batas Kuadran**
+""")
