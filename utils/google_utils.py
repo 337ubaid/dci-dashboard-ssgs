@@ -1,12 +1,27 @@
 import streamlit as st
 import gspread
+import pandas as pd
 from gspread_dataframe import set_with_dataframe
 from google.oauth2.service_account import Credentials
 from config import SCOPES
 
+def get_raw_values(nama_worksheet="DATABASE"):
+    # ====== Ambil data dari Google Sheets ======
+    link_spreadsheet = st.session_state["spreadsheet_database_url"]
+    nama_worksheet = nama_worksheet
+
+    client = get_client()
+    ws = client.open_by_url(link_spreadsheet).worksheet(nama_worksheet)
+    raw = ws.get_all_values()
+
+    # DataFrame dengan header baris pertama
+    df = pd.DataFrame(raw[1:], columns=raw[0])
+    # df = df[df["Saldo Akhir"].astype(float) > 0]
+    return df
+
 def get_client():
     creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],  # langsung dict dari secrets.toml
+        st.secrets["gcp_service_account"],
         scopes=SCOPES
     )
     return gspread.authorize(creds)

@@ -2,6 +2,20 @@ import streamlit as st
 import pandas as pd
 
 
+def to_number(series: pd.Series, allow_parentheses: bool = False) -> pd.Series:
+    s = series.astype(str).str.strip()
+    if allow_parentheses:
+        # (123) -> -123 untuk kolom aging
+        s = s.str.replace(r"^\((.*)\)$", r"-\1", regex=True)
+    # Bersihkan Rupiah & pemisah ribuan gaya Indonesia
+    s = (
+        s.str.replace("Rp", "", regex=False)
+         .str.replace(".", "", regex=False)     # hapus titik ribuan
+         .str.replace(",", ".", regex=False)    # koma -> titik desimal
+         .str.replace(r"[^\d\.\-]", "", regex=True)  # buang karakter lain
+    )
+    return pd.to_numeric(s, errors="coerce")
+
 def cast_numeric_cols(df):
     """
     Konversi semua kolom numerik (kecuali kolom teks) menjadi float.
@@ -87,3 +101,4 @@ def validasi_data(df_upload, tanggal_target, segmen_target):
             df_upload[col] = "-"
 
     return df_upload.reindex(columns=sheet_header)
+

@@ -1,6 +1,14 @@
 import streamlit as st
 from datetime import datetime
 
+def is_database_available():
+    """
+    Cek apakah link database sudah ada.
+    """
+    if "spreadsheet_database_url" not in st.session_state or not st.session_state["spreadsheet_database_url"]:
+        st.error("❌ Belum ada link database! Silakan masukkan di halaman Home dulu.")
+        st.stop()
+
 def pilih_kategori():
     """
     UI helper untuk memilih bulan, tahun, dan segmen.
@@ -29,3 +37,15 @@ def pilih_kategori():
 
 
     return bulan_target, tahun_target, segmen_target
+
+def uppercase(string: str) -> str:
+    return string.upper() if string else ""
+
+def to_rupiah(n: float | int) -> str:
+    try:
+        x = float(n)
+    except Exception:
+        return "Rp 0"
+    # Format ribuan pakai titik
+    s = f"{int(round(x)):,}".replace(",", ".")
+    return f"Rp {s}"

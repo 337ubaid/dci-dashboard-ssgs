@@ -1,17 +1,18 @@
 import streamlit as st
 import pandas as pd
 import traceback
-from utils.helpers import pilih_kategori
+from utils.helpers import is_database_available, pilih_kategori
 from utils.validation import validasi_data
 from utils.google_utils import get_client, replace_bulan_segmen
+from sidebar import menu
 
-st.set_page_config(page_title="Upload Data", layout="wide")
+st.set_page_config(page_title="Upload Data", layout="wide", page_icon="📤")
 st.title("📤 Upload Data ke Google Sheets")
 
+
 # Pastikan link ada di session_state
-if "spreadsheet_database_url" not in st.session_state or not st.session_state["spreadsheet_database_url"]:
-    st.error("❌ Belum ada link database! Silakan masukkan di halaman Home dulu.")
-    st.stop()
+is_database_available()
+menu()
 
 link_spreadsheet = st.text_input("Masukkan link Spreadsheet sumber:")
 nama_worksheet_asal = st.text_input("Masukkan nama Worksheet sumber:")
@@ -28,7 +29,6 @@ if st.button("🔄 Proses Data"):
     try:
         # Ambil semua values
         values = workbook_asal.worksheet(nama_worksheet_asal).get_all_values()
-
 
         # Baris pertama = header
         headers = values[0]
