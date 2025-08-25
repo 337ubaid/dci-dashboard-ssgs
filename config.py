@@ -5,6 +5,7 @@ Ubah nilai di sini kalau spreadsheet/worksheet berubah.
 """
 
 CREDENTIALS_FILE = st.secrets["gcp_service_account"]
+
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # Default spreadsheet & worksheet tujuan upload
