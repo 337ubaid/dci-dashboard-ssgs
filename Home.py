@@ -41,4 +41,3 @@ if "spreadsheet_database_url" in st.session_state and st.session_state["spreadsh
     menu()
 else:
     st.warning("Silakan masukkan link database dan simpan terlebih dahulu untuk mengakses Dashboard")
-
