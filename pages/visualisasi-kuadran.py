@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from utils.google_utils import get_raw_values
-from utils.helpers import is_database_available, pilih_kategori, to_rupiah
-from utils.validation import to_number
+from utils.helpers import is_database_available, pilih_kategori, to_rupiah, update_dataframe_kuadran_top_gsheet
+# from utils.google_utils import get_raw_values
+# from utils.validation import to_number
 from sidebar import menu
 
 
@@ -16,24 +16,17 @@ from sidebar import menu
 st.set_page_config(page_title="Visualisasi Kuadran", layout="wide", page_icon="🍀")
 st.title("🍀 Visualisasi Kuadran")
 
-# Pastikan link ada di session_state
-is_database_available()
+# ====== Ambil data dari Google Sheets ======
+if not is_database_available():
+    st.page_link("home.py", label="Home", icon="🏠")
+    st.stop()
+
+df = st.session_state["df_database_clean"]
 
 # Set sidebar
 menu()
 
-# ====== Ambil data dari Google Sheets ======
-df = get_raw_values()
-
-# Konversi numeric
-# TODO: implement to_number, kurangi baris jadi 1 baris aja
-aging_cols = ["0-3 Bulan","4-6 Bulan","7-12 Bulan","13-24 Bulan","> 24 Bulan"]
-df[aging_cols] = df[aging_cols].apply(lambda s: to_number(s, allow_parentheses=True))
-df["Saldo Akhir"] = to_number(df["Saldo Akhir"], allow_parentheses=False)
-df["Lama Tunggakan"] = to_number(df["Lama Tunggakan"], allow_parentheses=False)
-df["Kuadran"] = pd.to_numeric(df["Kuadran"], errors="coerce").astype("Int64")
-
-# ====== Filter ======
+# ====== Filter ====== 
 bulan_target, tahun_target, segmen_target = pilih_kategori()
 
 df_filtered = df.copy()
@@ -137,77 +130,96 @@ with m2:
         st.info("Tidak ada data Proporsi Jumlah Tunggakan per Kuadran.")
 
 
-# ====== CSS Card ======
-st.markdown("""
-<style>
-.card {
-#   background-color: #ffffff;
-  padding: 1.2rem;
-  margin-bottom: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.card h4 { margin: 0 0 .5rem 0; font-size: 1.05rem; font-weight: 700; }
-.card p { margin: .2rem 0; }
-# .top3 { font-size: .92rem; color: #444; }
-.viewmore { margin-top: .5rem; }
-</style>
-""", unsafe_allow_html=True)
-
 # ====== Komponen Kuadran ======
+def update_df_top(df_database, df_update):
+    """
+    Update df_database berdasarkan df_update
+    key unik = (IdNumber, Segmen, Bulan Tahun)
+    """
+    for _, row in df_update.iterrows():
+        mask = (
+            (df_database["IdNumber"] == row["IdNumber"]) &
+            (df_database["Segmen"] == row["Segmen"]) &
+            (df_database["Bulan Tahun"] == row["Bulan Tahun"])
+        )
+        if mask.any():
+            # update semua kolom selain key
+            for col in df_update.columns:
+                if col not in ["IdNumber", "Segmen", "Bulan Tahun"]:
+                    df_database.loc[mask, col] = row[col]
+        else:
+            st.warning(f"Tidak ditemukan, skip: {row['IdNumber']} {row['Segmen']} {row['Bulan Tahun']}")
+    return df_database
+
 def render_kuadran(dfq: pd.DataFrame, kuadran_num: int, judul: str):
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown(f"<h4>{judul}</h4>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(f" #### {judul}")
 
-    if dfq.empty:
-        st.info("Tidak ada data di kuadran ini.")
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
+        if dfq.empty:
+            st.info("Tidak ada data di kuadran ini.")
+            return
 
-    jml = len(dfq)
-    persen_plg = (jml / total_pelanggan * 100) if total_pelanggan else 0.0
+        jml = len(dfq)
+        persen_plg = (jml / total_pelanggan * 100) if total_pelanggan else 0.0
 
-    total_nom = dfq["Saldo Akhir"].sum(skipna=True)
-    persen_nom = (total_nom / total_tunggakan * 100) if total_tunggakan else 0.0
+        total_nom = dfq["Saldo Akhir"].sum(skipna=True)
+        persen_nom = (total_nom / total_tunggakan * 100) if total_tunggakan else 0.0
 
-    st.markdown(f"<p>Jumlah pelanggan: <b>{jml}</b> ({persen_plg:.1f}%)</p>", unsafe_allow_html=True)
-    st.markdown(f"<p>Total tunggakan: <b>{to_rupiah(total_nom)}</b> ({persen_nom:.1f}%)</p>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"Jumlah pelanggan: **{jml}** ({persen_plg:.1f}%)")
+        with col2:
+            st.markdown(f"Total tunggakan: **{to_rupiah(total_nom)}** ({persen_nom:.1f}%)")
 
-    # Top 3 by Saldo Akhir
-    top3 = dfq.sort_values("Saldo Akhir", ascending=False).head(3)
-    st.markdown("<p><b>Top 3:</b></p>", unsafe_allow_html=True)
-    for _, row in top3.iterrows():
-        nama = row["BP Name"]
-        tungg = to_rupiah(row["Saldo Akhir"])
-        lama = int(row["Lama Tunggakan"]) if pd.notna(row["Lama Tunggakan"]) else 0
-        st.markdown(f"<p class='top3'>- {nama} — {tungg} — {lama} bulan</p>", unsafe_allow_html=True)
+        # Top 3 by Saldo Akhir
+        top3 = dfq.sort_values("Saldo Akhir", ascending=False).head(3)
+        # st.dataframe(top3)
 
-    # # View More
-    # if st.button(f"View More Kuadran {kuadran_num}", key=f"view_{kuadran_num}", use_container_width=True):
-    #     show_cols = ["IdNumber", "BP Name", "AM", "Saldo Akhir", "Lama Tunggakan"]
-    #     show_cols = [c for c in show_cols if c in dfq.columns]
-    #     df_show = dfq.sort_values("Saldo Akhir", ascending=False)[show_cols].copy()
-    #     # Format saldo untuk tampilan tabel
-    #     df_show["Saldo Akhir"] = dfq.sort_values("Saldo Akhir", ascending=False)["Saldo Akhir"].apply(to_rupiah).values
-    #     st.table(df_show)
-    #     st.caption(
-    #         f"Total pelanggan kuadran {kuadran_num}: {jml} "
-    #         f"({persen_plg:.1f}%) • Total tunggakan kuadran: {to_rupiah(total_nom)} "
-    #         f"({persen_nom:.1f}% dari total)."
-    #     )
+        edited_top3 = st.data_editor(
+            top3[["IdNumber", "Bulan Tahun", "Segmen", "BP Name", "Saldo Akhir", "Keterangan"]],
+            # top3,
+            hide_index=True,
+            use_container_width=True,
+            disabled=["IdNumber", "Bulan Tahun", "Segmen", "BP Name", "Saldo Akhir"],
+            key=f"editor_{kuadran_num}"
+        )
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        if st.button(f"💾", key=f"simpan_{kuadran_num}"):
+            for _, row in edited_top3.iterrows():
+                mask = (
+                    (st.session_state["df_database_clean"]["IdNumber"] == row["IdNumber"]) &
+                    (st.session_state["df_database_clean"]["Segmen"] == row["Segmen"]) &
+                    (st.session_state["df_database_clean"]["Bulan Tahun"] == row["Bulan Tahun"])
+                )
+                st.session_state["df_database_clean"].loc[mask, "Keterangan"] = row["Keterangan"]
+            try:
+                client = st.session_state["client"]
+                update_dataframe_kuadran_top_gsheet(
+                    client=client,
+                    df_edited=edited_top3
+                )
+                st.success("✅ Perubahan tersimpan di session state & Google Sheet!")
+            except Exception as e:
+                st.error(f"Gagal update ke spreadsheet: {e}")
+
 
 # ====== Grid 2x2 Kuadran ======
 st.markdown(f"### Kuadran {segmen_target} — {tanggal_target}")
+
+# TODO bikin tombol edit di kanan pojok ujung dan beri info kalo user sedang mengedit, kalo user submit edit maka akan memperbauri df pusat
+
 c1, c2 = st.columns(2)
 with c1:
-    render_kuadran(df_filtered[df_filtered["Kuadran"] == 1], 1, "Kuadran 1 — Baru menunggak & tunggakan besar")
+    render_kuadran(df_filtered[df_filtered["Kuadran"] == 1], 1, "Kuadran 1 — Baru Mengunggak & Nominal Besar")
 with c2:
-    render_kuadran(df_filtered[df_filtered["Kuadran"] == 2], 2, "Kuadran 2 — Tunggakan lama & tunggakan besar")
+    render_kuadran(df_filtered[df_filtered["Kuadran"] == 2], 2, "Kuadran 2 — Tunggakan Lama & Nominal Besar")
 
 c3, c4 = st.columns(2)
 with c3:
-    render_kuadran(df_filtered[df_filtered["Kuadran"] == 3], 3, "Kuadran 3 — Baru menunggak & tunggakan kecil")
+    render_kuadran(df_filtered[df_filtered["Kuadran"] == 3], 3, "Kuadran 3 — Baru Menunggak & Nominal Kecil")
 with c4:
-    render_kuadran(df_filtered[df_filtered["Kuadran"] == 4], 4, "Kuadran 4 — Tunggakan lama & tunggakan kecil")
+    render_kuadran(df_filtered[df_filtered["Kuadran"] == 4], 4, "Kuadran 4 — Tunggakan Lama & Nominal Kecil")
+
+
+# if st.button("View More", use_container_width=True):
+#     st.switch_page("pages/kuadran-all.py")

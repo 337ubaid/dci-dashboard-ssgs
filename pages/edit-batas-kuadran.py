@@ -7,9 +7,12 @@ from sidebar import menu
 st.set_page_config(page_title="Modifikasi Batas Kuadran", layout="centered")
 st.title("📊 Modifikasi Batas Kuadran")
 
-menu()
 
 is_database_available()
+menu()
+
+st.warning("⚠️ Halaman ini masih dalam pengembangan. Sementara, batas kuadran ini.")
+
 
 link_spreadsheet = st.session_state["spreadsheet_database_url"]
 nama_worksheet = "Batas Kuadran"

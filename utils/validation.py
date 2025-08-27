@@ -21,7 +21,7 @@ def cast_numeric_cols(df):
     Konversi semua kolom numerik (kecuali kolom teks) menjadi float.
     Bersihkan format: hapus .00/,00 di akhir, hapus Rp, titik, koma, spasi.
     """
-    exclude = ["BP Name", "AM", "Keterangan", "Segmen", "Bulan Tahun"]
+    exclude = ["BP Name", "AM", "Keterangan", "Segmen", "Bulan Tahun", "Last Update"]
 
     for col in df.columns:
         if col in exclude:
@@ -44,7 +44,7 @@ def cast_numeric_cols(df):
         print(s)
 
         # Konversi ke float
-        df[col] = pd.to_numeric(s, errors="coerce")
+        df[col] = pd.to_numeric(s, downcast="signed", errors="coerce")
 
     return df
 

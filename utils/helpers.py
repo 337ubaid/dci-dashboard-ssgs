@@ -1,13 +1,55 @@
 import streamlit as st
+import pandas as pd
 from datetime import datetime
+from utils.google_utils import get_raw_values, get_worksheet
+
+
+def update_dataframe_kuadran_top_gsheet(client, df_edited: pd.DataFrame):
+    """
+    Update kolom 'Keterangan' di Google Sheet sesuai hasil edit di Streamlit.
+    Match berdasarkan IdNumber, Segmen, Bulan Tahun.
+    """
+
+    # ambil semua data dari sheet jadi dataframe
+    ws = get_worksheet(st.session_state["database_gsheet_url"], st.session_state["database_sheet_name"])
+    df_sheet = st.session_state["df_database"]
+
+    for _, row in df_edited.iterrows():
+        mask = (
+            (df_sheet["IdNumber"] == row["IdNumber"]) &
+            (df_sheet["Segmen"] == row["Segmen"]) &
+            (df_sheet["Bulan Tahun"] == row["Bulan Tahun"])
+        )
+        if mask.any():
+            idx = df_sheet[mask].index[0]  # ambil index pertama
+            cell_row = idx + 2  # +2 karena index mulai dari 0 dan baris 1 header
+            col_ket = df_sheet.columns.get_loc("Keterangan") + 1
+            ws.update_cell(cell_row, col_ket, row["Keterangan"])
+
 
 def is_database_available():
-    """
-    Cek apakah link database sudah ada.
-    """
-    if "spreadsheet_database_url" not in st.session_state or not st.session_state["spreadsheet_database_url"]:
-        st.error("❌ Belum ada link database! Silakan masukkan di halaman Home dulu.")
-        st.stop()
+    # kalau df_database belum ada, ambil dari Google Sheet
+    if "df_database" not in st.session_state or st.session_state["df_database"] is None:
+        try:
+            st.session_state["df_database"] = get_raw_values(
+                st.session_state["database_gsheet_url"],
+                st.session_state.get("database_sheet_name", "DATABASE")
+            )
+
+            # Buat dataframe bersih hanya sekali
+            if "df_database_clean" not in st.session_state:
+                st.session_state["df_database_clean"] = st.session_state["df_database"].query("`Saldo Akhir` > 0").reset_index(drop=True)
+
+            df_database_clean = st.session_state["df_database_clean"]
+        except Exception as e:
+            st.error(f"Gagal memuat data: {e}")
+            return False
+    
+    if "database_gsheet_url" not in st.session_state or not st.session_state["database_gsheet_url"]:
+        st.warning("⚠️ Silakan masukkan link database di halaman Home dulu.")
+        return False
+
+    return True
 
 def pilih_kategori():
     """
@@ -49,3 +91,5 @@ def to_rupiah(n: float | int) -> str:
     # Format ribuan pakai titik
     s = f"{int(round(x)):,}".replace(",", ".")
     return f"Rp {s}"
+
+

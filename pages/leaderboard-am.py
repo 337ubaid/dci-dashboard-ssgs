@@ -7,10 +7,9 @@ from utils.helpers import is_database_available
 st.set_page_config(page_title="Leaderboard AM", layout="wide", page_icon="🏆")
 st.title("📊 Leaderboard AM")
 
-menu()
-
 # Pastikan link ada di session_state
 is_database_available()
+menu()
 
 st.warning("⚠️ Halaman ini masih dalam pengembangan. Sementara, Anda bisa melihat total saldo akhir per AM di bawah ini.")
 
