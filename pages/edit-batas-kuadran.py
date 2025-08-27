@@ -14,7 +14,7 @@ menu()
 st.warning("⚠️ Halaman ini masih dalam pengembangan. Sementara, batas kuadran ini.")
 
 
-link_spreadsheet = st.session_state["spreadsheet_database_url"]
+link_spreadsheet = st.session_state["database_gsheet_url"]
 nama_worksheet = "Batas Kuadran"
 
 client = get_client()

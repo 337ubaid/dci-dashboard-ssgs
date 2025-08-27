@@ -184,7 +184,7 @@ def render_kuadran(dfq: pd.DataFrame, kuadran_num: int, judul: str):
             key=f"editor_{kuadran_num}"
         )
 
-        if st.button(f"💾", key=f"simpan_{kuadran_num}"):
+        if st.button(f"💾 Simpan Perubahan Kuadran {kuadran_num}", key=f"simpan_{kuadran_num}"):
             for _, row in edited_top3.iterrows():
                 mask = (
                     (st.session_state["df_database_clean"]["IdNumber"] == row["IdNumber"]) &

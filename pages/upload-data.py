@@ -18,8 +18,8 @@ link_spreadsheet = st.text_input("Masukkan link Spreadsheet sumber:")
 nama_worksheet_asal = st.text_input("Masukkan nama Worksheet sumber:")
 
 client = get_client()
-workbook_tujuan = client.open_by_url(st.session_state["spreadsheet_database_url"])
-worksheet_tujuan = workbook_tujuan.worksheet(st.session_state["worksheet_database_name"])
+workbook_tujuan = client.open_by_url(st.session_state["database_gsheet_url"])
+worksheet_tujuan = workbook_tujuan.worksheet(st.session_state["database_sheet_name"])
 workbook_asal = client.open_by_url(link_spreadsheet) if link_spreadsheet else None
 
 bulan_target, tahun_target, segmen_target = pilih_kategori()

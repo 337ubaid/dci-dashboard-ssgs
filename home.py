@@ -93,5 +93,5 @@ Gunakan menu di sidebar untuk:
 """)
 
 # Debug session_state (opsional, bisa dimatikan)
-# st.write("### Debug session_state")
-# st.json(st.session_state)
+st.write("### Debug session_state")
+st.json(st.session_state)

@@ -88,18 +88,3 @@ def replace_bulan_segmen(worksheet, bulan, segmen, df_baru):
     worksheet.sort((1, "des"), (2, "asc"), (11, "des"))
     st.info("📌 Data disortir berdasarkan Tanggal & Segmen.")
 
-
-def update_google_sheet(worksheet, df_update: pd.DataFrame):
-    """
-    worksheet: gspread worksheet object
-    df_update: dataframe hasil edit
-    """
-    sheet_values = worksheet.get_all_records()
-    df_sheet = pd.DataFrame(sheet_values)
-
-    # update lokal dulu
-    df_sheet = update_dataframe_kuadran_top3(df_sheet, df_update)
-
-    # clear lalu replace (cara aman)
-    worksheet.clear()
-    worksheet.update([df_sheet.columns.values.tolist()] + df_sheet.values.tolist())
