@@ -3,6 +3,9 @@ import pandas as pd
 from datetime import datetime
 from utils.google_utils import get_raw_values, get_worksheet
 
+def get_clean_database():
+    st.session_state["df_database_clean"] = st.session_state["df_database"].query("`Saldo Akhir` > 0").reset_index(drop=True)
+    return st.session_state["df_database_clean"]
 
 def update_dataframe_kuadran_top_gsheet(client, df_edited: pd.DataFrame):
     """

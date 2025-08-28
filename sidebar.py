@@ -12,7 +12,7 @@ def menu():
         st.page_link("pages/visualisasi-kuadran.py", label="Kuadran", icon="🍀")
         st.page_link("pages/tanggungan-tiap-am.py", label="Tanggungan tiap AM", icon="👤")
         st.page_link("pages/leaderboard-am.py", label="Leaderboard AM", icon="🏆")
-        st.page_link("pages/collection-performance.py", label="Collection Performance")
+        st.page_link("pages/collection-performance.py", label="Collection Performance", icon="📈")
         # st.page_link("pages/saldo_akhir_per_bulan.py", label="Saldo Akhir per Bulan")
         st.subheader("Modifikasi Database")
         st.page_link("pages/upload-data.py", label="Upload CYC", icon="📤")

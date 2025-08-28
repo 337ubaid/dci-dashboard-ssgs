@@ -1,81 +1,108 @@
-import pandas as pd
-import plotly.express as px
 import streamlit as st
-from utils.google_utils import get_raw_values
+import plotly.express as px
+import plotly.graph_objects as go
 from sidebar import menu
-from utils.helpers import is_database_available
+from utils.services import get_raw_values, is_database_available
+from utils.format import cast_to_number
 
-st.set_page_config(page_title="Collection Performance", layout="wide", page_icon="🏆")
+
+
+st.set_page_config(page_title="Collection Performance - Dashboard Data Collection", layout="wide", page_icon="📈")
 st.title("📊 Collection Performance")
 
 # Pastikan link ada di session_state
 is_database_available()
 menu()
 
+def get_data_collection(link_data, sheet_name):
+    df = get_raw_values(link_data, sheet_name)
+    df["DGS"] = cast_to_number(df["DGS"])
+    df["DPS"] = cast_to_number(df["DPS"])
+    df["DSS"] = cast_to_number(df["DSS"])
+    df["RBS"] = cast_to_number(df["RBS"])
+    df["Rata-rata"] = cast_to_number(df["Rata-rata"])
+    return df
 
-def plot_collection_performance(df):
-    # Ubah ke long format biar bisa plot banyak line sekaligus
-    df = df.melt(id_vars="BULAN", var_name="Segmen", value_name="Persentase")
+# def plot_collection_performance(df, title):
+#     # Ubah ke long format biar bisa plot banyak line sekaligus
+#     df = df.melt(id_vars="BULAN", var_name="Segmen", value_name="Persentase")
 
-    # Plot line chart
-    fig = px.line(
-        df,
-        x="BULAN",
-        y="Persentase",
-        color="Segmen",
-        markers=True,
-        title="Collection Performance per Segmen"
+#     # Plot line chart
+#     fig = px.line(
+#         df,
+#         x="BULAN",
+#         y="Persentase",
+#         color="Segmen",
+#         markers=True,
+#         title=f"Collection Performance {title}"
+#     )
+
+#     fig.update_layout(yaxis_ticksuffix="%")
+
+#     st.plotly_chart(fig, use_container_width=False)
+
+import plotly.graph_objects as go
+
+# Definisikan warna manual per segmen
+segmen_colors = {
+    "DGS": "#1f77b4",
+    "DPS": "#ff7f7f",
+    "DSS": "#d62728",
+    "RBS": "#65ddd7"
+}
+
+def plot_collection_performance(df, title):
+    df_long = df.melt(id_vars="BULAN", var_name="Segmen", value_name="Persentase")
+
+    fig = go.Figure()
+
+    # Tambahkan segmen lain (selain Rata-rata)
+    for segmen in df_long["Segmen"].unique():
+        if segmen == "Rata-rata":
+            continue
+        df_seg = df_long[df_long["Segmen"] == segmen]
+        fig.add_trace(
+            go.Scatter(
+                x=df_seg["BULAN"],
+                y=df_seg["Persentase"],
+                mode="lines+markers",
+                name=segmen,
+                line=dict(color=segmen_colors.get(segmen, None))  # warna sesuai mapping
+            )
+        )
+
+    # Tambahkan Rata-rata sebagai area abu-abu
+    df_avg = df_long[df_long["Segmen"] == "Rata-rata"]
+    fig.add_trace(
+        go.Scatter(
+            x=df_avg["BULAN"],
+            y=df_avg["Persentase"],
+            mode="lines",
+            name="Rata-rata",
+            line=dict(color="gray", width=2, dash="dot"),  # solid abu-abu
+            fill="tozeroy",
+            fillcolor="rgba(128,128,128,0.2)"
+        )
     )
 
-    fig.update_layout(yaxis_ticksuffix="%")
+    fig.update_layout(
+        title=f"Collection Performance {title}",
+        yaxis=dict(ticksuffix="%"),
+        legend=dict(title="Segmen")
+    )
 
-    st.plotly_chart(fig, use_container_width=False)
+    st.plotly_chart(fig, use_container_width=True)
 
-data = {
-    "BULAN": ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL"],
-    "DGS": [96.82, 89.87, 88.85, 92.57, 96.12, 96.77, 98.19],
-    "DPS": [57.57, 69.20, 72.20, 82.39, 87.52, 91.31, 92.23],
-    "DSS": [52.91, 52.66, 52.04, 53.53, 53.26, 62.59, 67.77],
-    "RBS": [5.90, 13.02, 18.05, 23.28, 27.64, 31.46, 35.25],
-    "Rata-rata": [53.3, 56.19, 57.79, 62.94, 66.13, 70.53, 73.36]
-}
-df = pd.DataFrame(data)
 
-st.subheader("Collection Performance")
-df_cr = get_raw_values("DATA COLLECTION CR")
-df_cyc = get_raw_values("DATA COLLECTION CYC")
+
+df_cr = get_data_collection(st.session_state["database_gsheet_url"], "DATA COLLECTION CR")
+df_cyc = get_data_collection(st.session_state["database_gsheet_url"], "DATA COLLECTION CYC")
 col1, col2 = st.columns(2)
 with col1:
     st.markdown("#### CR")
-    st.dataframe(df_cr)
-    plot_collection_performance(df)
+    plot_collection_performance(df_cr, "CR")
+    st.dataframe(df_cr.T)
 with col2:
     st.markdown("#### CYC")
-    st.dataframe(df_cyc)
-
-st.subheader("Remaining Balance")
-
-
-
-
-
-
-df = pd.DataFrame(data)
-st.dataframe(df)    
-
-# Ubah ke long format biar bisa plot banyak line sekaligus
-df_long = df.melt(id_vars="BULAN", var_name="Segmen", value_name="Persentase")
-
-# Plot line chart
-fig = px.line(
-    df_long,
-    x="BULAN",
-    y="Persentase",
-    color="Segmen",
-    markers=True,
-    title="Collection Performance per Segmen"
-)
-
-fig.update_layout(yaxis_ticksuffix="%")
-
-st.plotly_chart(fig, use_container_width=False)
+    plot_collection_performance(df_cyc, "CYC")
+    st.dataframe(df_cyc.T)

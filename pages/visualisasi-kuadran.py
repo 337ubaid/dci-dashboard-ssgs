@@ -1,27 +1,24 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from utils.helpers import is_database_available, pilih_kategori, to_rupiah, update_dataframe_kuadran_top_gsheet
-# from utils.google_utils import get_raw_values
-# from utils.validation import to_number
 from sidebar import menu
-
-
+from utils.services import is_database_available, get_clean_database, update_keterangan_top_kuadran
+from utils.format import to_rupiah
+from utils.ui import pilih_kategori
 
 # TODO: tambahkan proporsi jumlah pelanggan n jumlah tunggakan jika user pilih opsi semua
 
 
-
-# Set konfigurasi halaman visualisasi Kuadran
-st.set_page_config(page_title="Visualisasi Kuadran", layout="wide", page_icon="🍀")
-st.title("🍀 Visualisasi Kuadran")
+# ====== Konfigurasi Halaman Kuadran ======
+st.set_page_config(page_title="Kuadran - Dashboard Data Collection", layout="wide", page_icon="📈")
+st.title("🍀 Kuadran")
 
 # ====== Ambil data dari Google Sheets ======
 if not is_database_available():
     st.page_link("home.py", label="Home", icon="🏠")
     st.stop()
 
-df = st.session_state["df_database_clean"]
+df = get_clean_database()
 
 # Set sidebar
 menu()
@@ -193,9 +190,7 @@ def render_kuadran(dfq: pd.DataFrame, kuadran_num: int, judul: str):
                 )
                 st.session_state["df_database_clean"].loc[mask, "Keterangan"] = row["Keterangan"]
             try:
-                client = st.session_state["client"]
-                update_dataframe_kuadran_top_gsheet(
-                    client=client,
+                update_keterangan_top_kuadran(
                     df_edited=edited_top3
                 )
                 st.success("✅ Perubahan tersimpan di session state & Google Sheet!")
