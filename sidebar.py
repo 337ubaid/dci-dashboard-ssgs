@@ -7,7 +7,7 @@ def menu():
 
     with st.sidebar:
         st.title("Menu")
-        st.page_link("home.py", label="Home", icon="🏠")
+        st.page_link("home.py", label="Home", icon=":material/home:")
         st.subheader("Visualisasi Data")
         st.page_link("pages/visualisasi-kuadran.py", label="Kuadran", icon="🍀")
         st.page_link("pages/tanggungan-tiap-am.py", label="Tanggungan tiap AM", icon="👤")

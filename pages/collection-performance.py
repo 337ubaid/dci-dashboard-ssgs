@@ -45,10 +45,10 @@ import plotly.graph_objects as go
 
 # Definisikan warna manual per segmen
 segmen_colors = {
-    "DGS": "#1f77b4",
-    "DPS": "#ff7f7f",
-    "DSS": "#d62728",
-    "RBS": "#65ddd7"
+    "DGS": "#89C4E9",
+    "DPS": "#FF727C",
+    "DSS": "#9E0000",
+    "RBS": "#00527E"
 }
 
 def plot_collection_performance(df, title):
@@ -56,7 +56,21 @@ def plot_collection_performance(df, title):
 
     fig = go.Figure()
 
-    # Tambahkan segmen lain (selain Rata-rata)
+    # Tambahkan Rata-rata sebagai area abu-abu
+    df_avg = df_long[df_long["Segmen"] == "Rata-rata"]
+    fig.add_trace(
+        go.Scatter(
+            x=df_avg["BULAN"],
+            y=df_avg["Persentase"],
+            mode="lines",
+            name="Rata-rata",
+            line=dict(color="#fde8bd", width=2, dash="dot"), 
+            fill="tozeroy",
+            fillcolor="rgba(253,240,213,0.3)" 
+        )
+    )
+
+    # Tambahkan segmen 
     for segmen in df_long["Segmen"].unique():
         if segmen == "Rata-rata":
             continue
@@ -70,20 +84,6 @@ def plot_collection_performance(df, title):
                 line=dict(color=segmen_colors.get(segmen, None))  # warna sesuai mapping
             )
         )
-
-    # Tambahkan Rata-rata sebagai area abu-abu
-    df_avg = df_long[df_long["Segmen"] == "Rata-rata"]
-    fig.add_trace(
-        go.Scatter(
-            x=df_avg["BULAN"],
-            y=df_avg["Persentase"],
-            mode="lines",
-            name="Rata-rata",
-            line=dict(color="gray", width=2, dash="dot"),  # solid abu-abu
-            fill="tozeroy",
-            fillcolor="rgba(128,128,128,0.2)"
-        )
-    )
 
     fig.update_layout(
         title=f"Collection Performance {title}",
@@ -99,10 +99,10 @@ df_cr = get_data_collection(st.session_state["database_gsheet_url"], "DATA COLLE
 df_cyc = get_data_collection(st.session_state["database_gsheet_url"], "DATA COLLECTION CYC")
 col1, col2 = st.columns(2)
 with col1:
-    st.markdown("#### CR")
+    st.markdown("#### Collection Ratio (CR)")
     plot_collection_performance(df_cr, "CR")
     st.dataframe(df_cr.T)
 with col2:
-    st.markdown("#### CYC")
+    st.markdown("#### Current Year Collection (CYC)")
     plot_collection_performance(df_cyc, "CYC")
     st.dataframe(df_cyc.T)

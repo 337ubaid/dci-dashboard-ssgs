@@ -20,7 +20,7 @@ link = st.text_input(
 database_sheet_name = "DATABASE"
 
 # ====== Tombol simpan link ======
-if st.button("✅ Simpan Link") and link:
+if st.button("✅ Simpan Link", type="primary") and link:
     st.session_state["database_gsheet_url"] = link
     st.session_state["database_sheet_name"] = database_sheet_name
     st.session_state.pop("df_database", None)         # reset agar data di-reload

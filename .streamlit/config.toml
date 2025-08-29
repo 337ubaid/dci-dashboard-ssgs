@@ -1,9 +1,9 @@
 [theme]
 base="light"
-primaryColor="#e60000"         # Merah Telkom
-backgroundColor="#ffffff"      # Putih bersih
-secondaryBackgroundColor="#f9f9f9"  # Abu-abu sangat muda biar kontras
-textColor="#000000"            # Hitam
+primaryColor="#FF727C"       
+backgroundColor="#ffffff"      
+secondaryBackgroundColor="#e5e5e5"  
+textColor="#000814"        
 font="sans serif"
 
 [client]

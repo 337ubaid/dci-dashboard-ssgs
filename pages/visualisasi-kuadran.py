@@ -58,13 +58,15 @@ total_tunggakan = df_filtered["Saldo Akhir"].sum(skipna=True)
 order = ["Kuadran 1", "Kuadran 2", "Kuadran 3", "Kuadran 4"]
 # Definisikan warna tetap per Kuadran
 kuadran_colors = {
-    "Kuadran 1": "#1f77b4",
-    "Kuadran 2": "#d62728",  
-    "Kuadran 3": "#d9e7fd",  
-    "Kuadran 4": "#ff7f7f",  
+    "Kuadran 1": "#89C4E9",
+    "Kuadran 2": "#FF727C",  
+    "Kuadran 3": "#00527E",  
+    "Kuadran 4": "#AD1F2B",  
+# E63946 RED
 }
 
-st.markdown(f"### Ringkasan {segmen_target} — {tanggal_target}")
+st.divider()
+st.markdown(f"<h3 style='text-align: center;'>Ringkasan {segmen_target} — {tanggal_target}</h3>", unsafe_allow_html=True)
 m1, m2 = st.columns(2)
 
 with m1:
@@ -199,7 +201,8 @@ def render_kuadran(dfq: pd.DataFrame, kuadran_num: int, judul: str):
 
 
 # ====== Grid 2x2 Kuadran ======
-st.markdown(f"### Kuadran {segmen_target} — {tanggal_target}")
+st.divider()
+st.markdown(f"<h3 style='text-align: center;'>Kuadran {segmen_target} — {tanggal_target}</h3>", unsafe_allow_html=True)
 
 # TODO bikin tombol edit di kanan pojok ujung dan beri info kalo user sedang mengedit, kalo user submit edit maka akan memperbauri df pusat
 
@@ -218,3 +221,29 @@ with c4:
 
 # if st.button("View More", use_container_width=True):
 #     st.switch_page("pages/kuadran-all.py")
+
+# CSS custom untuk center align tabs
+st.markdown(
+    """
+    <style>
+    .stTabs [role="tablist"] {
+        justify-content: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+with st.expander("View More"):
+    tab_names = ["Kuadran 1", "Kuadran 2", "Kuadran 3", "Kuadran 4"]
+    tabs = st.tabs(tab_names)
+
+    for i, tab in enumerate(tabs, start=1):  # start=1 biar sesuai kuadran
+        with tab:
+            st.dataframe(
+                df_filtered[df_filtered["Kuadran"] == i]
+                .sort_values("Saldo Akhir", ascending=False)
+                .reset_index(drop=True),
+                use_container_width=True,
+                height=600
+            )
