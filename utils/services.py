@@ -239,7 +239,7 @@ def confirm_update_database(df_upload, tanggal_target, segmen_target):
             del st.session_state["df_upload"]
             
         # Redirect ke halaman utama (Home.py)
-        st.switch_page("Home.py") 
+        st.switch_page("home.py") 
 
     if st.button("❌ Batal", use_container_width=True):
         st.info("Upload dibatalkan.")
