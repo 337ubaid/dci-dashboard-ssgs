@@ -1,21 +1,25 @@
 import streamlit as st
-import pandas as pd
 import traceback
-from sidebar import menu
-from utils.services import is_database_available, get_raw_values, get_worksheet, confirm_update_database
+import datetime
+from utils.services import is_database_available, get_raw_values, confirm_update_database
 from utils.ui import pilih_kategori
-from utils.format import validasi_dataframe
+from utils.format import validasi_data_upload
 
-st.set_page_config(page_title="Upload Data - Dashboard Data Collection", layout="wide", page_icon="📈")
-st.title("📤 Upload Data ke Google Sheets")
-
-
-# Pastikan link ada di session_state
-is_database_available()
+from sidebar import menu
 menu()
 
-st.session_state["upload_gsheet_url"] = st.text_input("Masukkan link Spreadsheet sumber:")
-st.session_state["upload_sheet_name"] = st.text_input("Masukkan nama Worksheet sumber:")
+st.set_page_config(page_title="Update CYC - Dashboard Data Collection", layout="wide", page_icon="📈")
+st.title("📤 Update Database CYC ke Google Sheets")
+
+# Pastikan link ada di session_state
+# ====== Ambil data dari Google Sheets ======
+if not is_database_available():
+    st.page_link("home.py", label="Home", icon="🏠")
+    st.stop()
+
+
+st.session_state["upload_gsheet_url"] = st.text_input("Masukkan link Spreadsheet CYC:")
+st.session_state["upload_sheet_name"] = st.text_input("Masukkan nama Worksheet CYC:")
 
 bulan_target, tahun_target, segmen_target = pilih_kategori()
 tanggal_target = f"{bulan_target}/{tahun_target}"
@@ -26,8 +30,13 @@ if st.button("🔄 Proses Data"):
 
         df = get_raw_values(st.session_state["upload_gsheet_url"], st.session_state["upload_sheet_name"])
 
-        df = validasi_dataframe(df, tanggal_target, segmen_target)
-        
+        # st.write("### Data Mentah")
+        # st.dataframe(df, use_container_width=True)
+
+        df = validasi_data_upload(df, tanggal_target, segmen_target)
+        # st.write("### Data Setelah Validasi")
+        # st.dataframe(df, use_container_width=True)
+    
         st.session_state.df_upload = df
 
     except Exception as e:
@@ -48,3 +57,8 @@ if "df_upload" in st.session_state:
             tanggal_target,
             segmen_target,
         )
+
+
+st.write("---")
+
+st.write(datetime.datetime.now())

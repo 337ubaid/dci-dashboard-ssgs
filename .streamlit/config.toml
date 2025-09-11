@@ -1,10 +1,58 @@
-[theme]
-base="light"
-primaryColor="#FF727C"       
-backgroundColor="#ffffff"      
-secondaryBackgroundColor="#e5e5e5"  
-textColor="#000814"        
-font="sans serif"
-
 [client]
 showSidebarNavigation = false
+
+[[theme.fontFaces]]
+family = "SpaceGrotesk"
+url = "app/static/SpaceGrotesk-VariableFont_wght.ttf"
+
+[[theme.fontFaces]]
+family = "SpaceMono"
+url = "app/static/SpaceMono-Bold.ttf"
+style = "normal"
+weight = 700
+
+[[theme.fontFaces]]
+family = "SpaceMono"
+url = "app/static/SpaceMono-BoldItalic.ttf"
+style = "italic"
+weight = 700
+
+[[theme.fontFaces]]
+family = "SpaceMono"
+url = "app/static/SpaceMono-Italic.ttf"
+style = "italic"
+weight = 400
+
+[[theme.fontFaces]]
+family = "SpaceMono"
+url = "app/static/SpaceMono-Regular.ttf"
+style = "normal"
+weight = 400
+
+[theme]
+primaryColor = "#3b82f6"                # biru cerah (ganti dari oranye-cokelat)
+backgroundColor = "#f5f9ff"             # biru sangat muda (ganti dari krem)
+secondaryBackgroundColor = "#e8f0fb"    # biru muda (ganti dari abu krem)
+textColor = "#1e3a5f"                   # biru gelap (ganti dari cokelat tua)
+linkColor = "#1e3a5f"                   # konsisten dengan teks
+borderColor = "#cbd5e1"                 # abu kebiruan
+showWidgetBorder = false
+baseRadius = "0.75rem"
+buttonRadius = "full"
+font = "SpaceGrotesk"
+headingFontWeights = [600,500,500,500,500,500]
+headingFontSizes = ["3rem", "2rem"]
+codeFont = "SpaceMono"
+codeFontSize = ".75rem"
+codeBackgroundColor = "#e6f0fa"         # biru muda untuk background kode
+showSidebarBorder = false
+chartCategoricalColors = ["#3b82f6", "#0ea5e9", "#60a5fa"]  # palet biru gradasi
+
+[theme.sidebar]
+backgroundColor = "#f0f6fc"             # biru sangat muda
+secondaryBackgroundColor = "#e8f0fb"    # konsisten dengan main
+headingFontSizes = ["1.6rem", "1.4rem", "1.2rem"]
+dataframeHeaderBackgroundColor = "#dbeafe"  # biru pastel untuk header tabel
+
+[server]
+fileWatcherType = "poll"

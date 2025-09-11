@@ -11,12 +11,20 @@ st.title("📈 Dashboard Data Collection")
 
 st.markdown("### Selamat datang!")
 
-# ====== Input link database dari user ======
-link = st.text_input(
-    "Masukkan link Spreadsheet Database:", 
-    value=st.session_state.get("database_gsheet_url", ""),
-    placeholder="https://docs.google.com/spreadsheets/..."
-)
+# # ====== Input link database dari user ======
+# link = st.text_input(
+#     "Masukkan link Spreadsheet Database:", 
+#     value=st.session_state.get("database_gsheet_url", ""),
+#     placeholder="https://docs.google.com/spreadsheets/..."
+# )
+
+# =============================================================================================================================================================
+# ============================================================ Default link database untuk testing ============================================================
+st.session_state["database_gsheet_url"] = st.secrets["spreadsheet_database"]["spreadsheet_url"]
+st.session_state["database_sheet_name"] = "DATABASE"
+# =============================================================================================================================================================
+
+
 database_sheet_name = "DATABASE"
 
 # ====== Tombol simpan link ======
