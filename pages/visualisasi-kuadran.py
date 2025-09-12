@@ -163,10 +163,10 @@ def render_kuadran(dfq: pd.DataFrame, kuadran_num: int, judul: str):
         top3["Saldo"] = top3["Saldo Akhir"].apply(format_saldo)
 
         edited_top3 = st.data_editor(
-            top3[["IdNumber", "BP Name", "Saldo", "Keterangan"]],
+            top3[["IdNumber", "BP Name", "Saldo", "AM", "Keterangan"]],
             hide_index=True,
             use_container_width=True,
-            disabled=["IdNumber", "BP Name", "Saldo"],  # biar yg tampil cuma view
+            disabled=["IdNumber", "BP Name", "Saldo", "AM" ],  # biar yg tampil cuma view
             key=f"editor_{kuadran_num}"
         )
 
