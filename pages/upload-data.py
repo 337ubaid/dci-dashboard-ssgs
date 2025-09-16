@@ -29,12 +29,12 @@ if st.button("🔄 Proses Data"):
 
         df = get_raw_values(st.session_state["upload_gsheet_url"], st.session_state["upload_sheet_name"])
 
-        st.write("### Data Mentah")
-        st.dataframe(df, use_container_width=True)
+        # st.write("### Data Mentah")
+        # st.dataframe(df, use_container_width=True)
 
         df = validasi_data_upload(df, tanggal_target, segmen_target)
-        st.write("### Data Setelah Validasi")
-        st.dataframe(df, use_container_width=True)
+        # st.write("### Data Setelah Validasi")
+        # st.dataframe(df, use_container_width=True)
     
         st.session_state.df_upload = df
 
