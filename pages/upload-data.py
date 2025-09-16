@@ -5,9 +5,6 @@ from utils.services import is_database_available, get_raw_values, confirm_update
 from utils.ui import pilih_kategori
 from utils.format import validasi_data_upload
 
-from sidebar import menu
-menu()
-
 st.set_page_config(page_title="Update CYC - Dashboard Data Collection", layout="wide", page_icon="📈")
 st.title("📤 Update Database CYC ke Google Sheets")
 
@@ -17,6 +14,8 @@ if not is_database_available():
     st.page_link("home.py", label="Home", icon="🏠")
     st.stop()
 
+from sidebar import menu
+menu()
 
 st.session_state["upload_gsheet_url"] = st.text_input("Masukkan link Spreadsheet CYC:")
 st.session_state["upload_sheet_name"] = st.text_input("Masukkan nama Worksheet CYC:")
@@ -30,12 +29,12 @@ if st.button("🔄 Proses Data"):
 
         df = get_raw_values(st.session_state["upload_gsheet_url"], st.session_state["upload_sheet_name"])
 
-        # st.write("### Data Mentah")
-        # st.dataframe(df, use_container_width=True)
+        st.write("### Data Mentah")
+        st.dataframe(df, use_container_width=True)
 
         df = validasi_data_upload(df, tanggal_target, segmen_target)
-        # st.write("### Data Setelah Validasi")
-        # st.dataframe(df, use_container_width=True)
+        st.write("### Data Setelah Validasi")
+        st.dataframe(df, use_container_width=True)
     
         st.session_state.df_upload = df
 

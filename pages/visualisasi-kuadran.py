@@ -5,8 +5,6 @@ from utils.services import is_database_available, get_clean_database, update_ket
 from utils.format import to_rupiah
 from utils.ui import pilih_kategori
 
-from sidebar import menu
-menu()
 
 # ====== Konfigurasi Halaman Kuadran ======
 st.set_page_config(page_title="Kuadran - Dashboard Data Collection", layout="wide", page_icon="📈")
@@ -16,6 +14,9 @@ st.title("🍀 Kuadran")
 if not is_database_available():
     st.page_link("home.py", label="Home", icon="🏠")
     st.stop()
+
+from sidebar import menu
+menu()
 
 df = get_clean_database()
 

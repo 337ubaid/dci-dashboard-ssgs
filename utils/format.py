@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-
+import re
 import numpy as np
 from utils.services import get_raw_values
+
 
 def cast_to_number(
         data, 
@@ -35,19 +36,54 @@ def cast_to_number(
     
     DEFAULT_EXCLUDE = ["BP Name", "AM", "Keterangan", "Segmen", "Bulan Tahun", "Last Updated"]
 
-    
+
     def _clean(series: pd.Series) -> pd.Series:
         s = series.astype(str).str.strip()
 
-        s = (
-            s.str.replace("Rp", "", regex=False)
-             .str.replace(".", "", regex=False)     # hapus titik ribuan
-             .str.replace(",", ".", regex=False)    # koma -> titik desimal
-             .str.replace(r"[^\d\.\-]", "", regex=True)  # buang karakter lain
-        )
+        def normalize(x: str) -> str:
+            if x in ["", "nan", "None"]:
+                return "0"
+
+            negative = False
+            if "(" in x and ")" in x:   # deteksi kurung
+                negative = True
+                x = x.replace("(", "").replace(")", "")
+
+            # Hilangkan Rp, spasi
+            x = x.replace("Rp", "").replace(" ", "")
+
+            # Case: ada koma dan titik (Indonesia/Eropa: 123.456,78)
+            if "," in x and "." in x:
+                x = x.replace(".", "").replace(",", ".")
+            
+            # Case: hanya koma
+            elif "," in x:
+                if len(x.split(",")[-1]) == 2:  # anggap desimal -> buang
+                    x = x.replace(",", "")
+                else:  # anggap ribuan
+                    x = x.replace(",", "")
+            
+            # Case: hanya titik
+            elif "." in x:
+                if len(x.split(".")[-1]) == 2:  # anggap desimal -> buang
+                    x = x.replace(".", "")
+                else:  # anggap ribuan
+                    x = x.replace(".", "")
+
+            # Buang karakter lain selain digit & minus
+            x = re.sub(r"[^\d\.\-]", "", x)
+
+            if negative and not x.startswith("-"):
+                x = "-" + x
+            return x
+
+        s = s.apply(normalize)
         return pd.to_numeric(s, errors="coerce").fillna(0)
 
+
     if isinstance(data, pd.Series):
+        # st.write("### Data _clean Series")
+        # st.dataframe(_clean(data))
         return _clean(data)
     
     elif isinstance(data, pd.DataFrame):
@@ -57,6 +93,8 @@ def cast_to_number(
         for col in df_clean.columns:
             if col not in exclude:
                 df_clean[col] = _clean(df_clean[col])
+        # st.write("### Data _clean Dataframe")
+        # st.dataframe(df_clean)
         return df_clean
     
     else:
@@ -120,11 +158,11 @@ def tentukan_kuadran(df, segmen):
     st.success(f"✅ Berhasil pilih Segmen **{segmen}**, dengan Batas Nominal **{to_rupiah(batas_nominal)}** dan Lama Tunggakan **{batas_waktu:.0f} bulan**")
 
     def cek_kuadran(row):
-        if row["Saldo Akhir"] >= batas_nominal and row["Lama Tunggakan"] >= batas_waktu:
+        if row["Saldo Akhir"] > batas_nominal and row["Lama Tunggakan"] > batas_waktu:
             return 1
-        elif row["Saldo Akhir"] < batas_nominal and row["Lama Tunggakan"] >= batas_waktu:
+        elif row["Saldo Akhir"] <= batas_nominal and row["Lama Tunggakan"] > batas_waktu:
             return 2
-        elif row["Saldo Akhir"] >= batas_nominal and row["Lama Tunggakan"] < batas_waktu:
+        elif row["Saldo Akhir"] > batas_nominal and row["Lama Tunggakan"] <= batas_waktu:
             return 3
         else:
             return 4
@@ -159,6 +197,8 @@ def validasi_data_upload(df_upload: pd.DataFrame, tanggal_target: str, segmen_ta
     # Pastikan kolom teks tertentu aman
     df_upload = _sanitize_text_column(df_upload, "Keterangan")
     df_upload = _sanitize_text_column(df_upload, "AM")
+    # st.write("### Data Sanitize (Kolom Teks)")
+    # st.dataframe(df_upload)
 
     # Cek kolom duplikat
     kolom_ganda = df_upload.columns[df_upload.columns.duplicated()].tolist()
@@ -176,6 +216,8 @@ def validasi_data_upload(df_upload: pd.DataFrame, tanggal_target: str, segmen_ta
 
     # Cast otomatis ke numerik (skip kolom teks)
     df_upload = cast_to_number(df_upload)
+    # st.write("### Data Cast to Number")
+    # st.dataframe(df_upload)
 
     # Tambahkan kolom tambahan
     df_upload["Segmen"] = segmen_target if segmen_target != "--Semua--" else "-"
