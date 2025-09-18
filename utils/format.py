@@ -158,11 +158,11 @@ def tentukan_kuadran(df, segmen):
     st.success(f"✅ Berhasil pilih Segmen **{segmen}**, dengan Batas Nominal **{to_rupiah(batas_nominal)}** dan Lama Tunggakan **{batas_waktu:.0f} bulan**")
 
     def cek_kuadran(row):
-        if row["Saldo Akhir"] > batas_nominal and row["Lama Tunggakan"] > batas_waktu:
+        if row["Saldo Akhir"] > batas_nominal and row["Lama Tunggakan"] <= batas_waktu:
             return 1
-        elif row["Saldo Akhir"] <= batas_nominal and row["Lama Tunggakan"] > batas_waktu:
+        elif row["Saldo Akhir"] > batas_nominal and row["Lama Tunggakan"] > batas_waktu:
             return 2
-        elif row["Saldo Akhir"] > batas_nominal and row["Lama Tunggakan"] <= batas_waktu:
+        elif row["Saldo Akhir"] <= batas_nominal and row["Lama Tunggakan"] <= batas_waktu:
             return 3
         else:
             return 4
